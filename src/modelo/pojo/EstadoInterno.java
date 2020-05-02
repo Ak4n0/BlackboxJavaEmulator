@@ -4,21 +4,22 @@ public class EstadoInterno {
 
 	private EstadoInterno() {}
 	
-	// Inmutables
 	private static String id = "12345a";
-	
-	// Estos cambian ya sea por acción del usuario del entorno
 	private static String password = "12345a";
+	private static String ip = "127.0.0.1";
+	private static int port = 8080;
+	
+	private static boolean entradasAutomaticas = true; 
 	
 	private static int I0 = 0;
 	private static int I1 = 0;
 	private static int I2 = 0;
 	private static int I3 = 0;
 	
-	private static int O0 = 0;
-	private static int O1 = 0;
-	private static int O2 = 0;
-	private static int O3 = 0;
+	private static boolean O0 = false;
+	private static boolean O1 = false;
+	private static boolean O2 = false;
+	private static boolean O3 = false;
 	
 	private static Integer inferiorI0 = null;
 	private static Integer superiorI0 = null;
@@ -51,6 +52,42 @@ public class EstadoInterno {
 	 */
 	public static void setPassword(String password) {
 		EstadoInterno.password = password;
+	}
+	/**
+	 * @return the ip
+	 */
+	public static String getIp() {
+		return ip;
+	}
+	/**
+	 * @param ip the ip to set
+	 */
+	public static void setIp(String ip) {
+		EstadoInterno.ip = ip;
+	}
+	/**
+	 * @return the port
+	 */
+	public static int getPort() {
+		return port;
+	}
+	/**
+	 * @param port the port to set
+	 */
+	public static void setPort(int port) {
+		EstadoInterno.port = port;
+	}
+	/**
+	 * @return the entradasAutomaticas
+	 */
+	public static boolean isEntradasAutomaticas() {
+		return entradasAutomaticas;
+	}
+	/**
+	 * @param entradasAutomaticas the entradasAutomaticas to set
+	 */
+	public static void setEntradasAutomaticas(boolean salidasAutomaticas) {
+		EstadoInterno.entradasAutomaticas = salidasAutomaticas;
 	}
 	/**
 	 * @return the i0
@@ -103,49 +140,49 @@ public class EstadoInterno {
 	/**
 	 * @return the o0
 	 */
-	public static int getO0() {
+	public static boolean getO0() {
 		return O0;
 	}
 	/**
 	 * @param o0 the o0 to set
 	 */
-	public static void setO0(int o0) {
+	public static void setO0(boolean o0) {
 		O0 = o0;
 	}
 	/**
 	 * @return the o1
 	 */
-	public static int getO1() {
+	public static boolean getO1() {
 		return O1;
 	}
 	/**
 	 * @param o1 the o1 to set
 	 */
-	public static void setO1(int o1) {
+	public static void setO1(boolean o1) {
 		O1 = o1;
 	}
 	/**
 	 * @return the o2
 	 */
-	public static int getO2() {
+	public static boolean getO2() {
 		return O2;
 	}
 	/**
 	 * @param o2 the o2 to set
 	 */
-	public static void setO2(int o2) {
+	public static void setO2(boolean o2) {
 		O2 = o2;
 	}
 	/**
 	 * @return the o3
 	 */
-	public static int getO3() {
+	public static boolean getO3() {
 		return O3;
 	}
 	/**
 	 * @param o3 the o3 to set
 	 */
-	public static void setO3(int o3) {
+	public static void setO3(boolean o3) {
 		O3 = o3;
 	}
 	/**

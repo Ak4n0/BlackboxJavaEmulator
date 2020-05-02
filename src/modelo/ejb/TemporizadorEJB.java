@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
+import javax.ejb.Stateless;
 import javax.ejb.Timer;
 
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Logger;
 import modelo.pojo.EstadoInterno;
 
+@Stateless
 public class TemporizadorEJB {
 
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(TemporizadorEJB.class);
@@ -24,6 +26,9 @@ public class TemporizadorEJB {
 	
 	@EJB
 	JwtEJB jwtEJB;
+	
+	@EJB
+	WebSocketEJB webSocketEJB;
 	
 	@Schedule(second="0", minute="*/5", hour="*")
 	private void enviarDatos(Timer t) {
@@ -84,13 +89,19 @@ public class TemporizadorEJB {
 	
 	@Schedule(second="*/1", minute="*", hour="*")
 	private void simularNuevoDato(Timer t) {
-		Method[] entradas = EstadoInterno.class.getDeclaredMethods();
-		for(Method entrada: entradas) {
-			if(entrada.getName().matches("setI\\d+")) {
-				try {
-					entrada.invoke(null, (int) (Math.random() * 256));
-				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					logger.error(e.getMessage());
+		if(EstadoInterno.isEntradasAutomaticas()) {
+			Method[] entradas = EstadoInterno.class.getDeclaredMethods();
+			for(Method entrada: entradas) {
+				if(entrada.getName().matches("setI\\d+")) {
+					try {
+						String puerto = entrada.getName().replace("set", "");
+						int valor = (int) (Math.random()* 256);
+						entrada.invoke(null, valor);
+						webSocketEJB.enviarEntrada(puerto, valor);
+						logger.debug("... para puerto " + puerto + ", valor " + valor);
+					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						logger.error(e.getMessage());
+					}
 				}
 			}
 		}
