@@ -1,3 +1,6 @@
+<%@page import="java.net.InetAddress"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,6 +15,7 @@
 		overflow-y: scroll;
 	}
 </style>
+<scrit>let myServer=<%= InetAddress.getLocalHost() %>;
 <script src="js/index.js" defer></script>
 </head>
 <body onload="inicializar()">

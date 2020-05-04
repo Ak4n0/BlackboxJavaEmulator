@@ -2,7 +2,7 @@ let socket;
 
 function inicializar() {
 	// inicializar variables globales
-	socket = new WebSocket("ws://127.0.0.1:8080/Blackbox/ws");
+	socket = new WebSocket("ws://" + myServer + ":8080/Blackbox/ws");
 	
 	inicializarComponentes();
 	inicializarWebsocket();
