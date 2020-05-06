@@ -13,9 +13,8 @@ import javax.ejb.Stateless;
 
 import org.slf4j.LoggerFactory;
 
-import com.auth0.jwt.interfaces.DecodedJWT;
-
 import ch.qos.logback.classic.Logger;
+import modelo.pojo.EstadoInterno;
 
 @LocalBean
 @Stateless
@@ -26,18 +25,19 @@ public class MensajeHttpEJB {
 	
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(MensajeHttpEJB.class);
 	
-	private final String ipServer = "127.0.0.1";
-	private final int portServer = 8080;
+	private final String ipServer = EstadoInterno.getIp();
+	private final int portServer = EstadoInterno.getPort();
 	private final String path = "/Centinela/blackbox/";
 	private final String USER_AGENT = "Mozilla/5.0";
 
 	private final String POST_URL = ipServer + ":" + portServer + path;
 
-	private String doPost(String path, String jwt) {
+	private String doPost(String jwt) {
+		logger.info("Enviando mensaje a " + POST_URL + " con dato " + jwt);
 		String retval;
 		try {
 			String POST_PARAMS = jwt;
-			URL obj = new URL(POST_URL + path);
+			URL obj = new URL(POST_URL);
 			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 			con.setRequestMethod("POST");
 			con.setRequestProperty("User-Agent", USER_AGENT);
@@ -76,14 +76,11 @@ public class MensajeHttpEJB {
 		return retval;
 	}
 	
-	public void comunicar(String path, String jwt) {
-		String respuesta = doPost(path, jwt);
+	public void comunicar(String jwt) {
+		String respuesta = doPost(jwt);
 		logger.debug("Respuesta: " + respuesta);
 		if(respuesta != null) {
-			DecodedJWT jwtRespuesta = jwtEJB.decodificar(respuesta);
-			if(jwtRespuesta != null) {
-				jwtEJB.interpretar(jwtRespuesta);
-			}
+			jwtEJB.interpretar(respuesta);
 		}
 	}
 }
