@@ -24,15 +24,16 @@ public class MensajeHttpEJB {
 	JwtEJB jwtEJB;
 	
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(MensajeHttpEJB.class);
-	
-	private final String ipServer = EstadoInterno.getIp();
-	private final int portServer = EstadoInterno.getPort();
+
 	private final String path = "/Centinela/blackbox/";
 	private final String USER_AGENT = "Mozilla/5.0";
-
-	private final String POST_URL = ipServer + ":" + portServer + path;
-
+	
 	private String doPost(String jwt) {
+		String ipServer = EstadoInterno.getIp();
+		int portServer = EstadoInterno.getPort();
+		
+		String POST_URL = ipServer + ":" + portServer + path;
+		
 		logger.info("Enviando mensaje a " + POST_URL + " con dato " + jwt);
 		String retval;
 		try {

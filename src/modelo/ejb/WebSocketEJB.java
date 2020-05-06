@@ -53,48 +53,61 @@ public class WebSocketEJB {
 			case "mod":
 				switch((String) object.get("param")) {
 				case "id":
-					EstadoInterno.setIp((String)object.get("value"));
+					EstadoInterno.setId((String)object.get("value"));
+					logger.debug("Cambio de id " + EstadoInterno.getId());
 					break;
 				case "pwd":
 					EstadoInterno.setPassword((String) object.get("value"));
+					logger.debug("Cambio de contraseña " + EstadoInterno.getPassword());
 					break;
 				case "ip":
 					EstadoInterno.setIp((String) object.get("value"));
+					logger.debug("Cambio de ip " + EstadoInterno.getIp());
 					break;
 				case "port":
 					EstadoInterno.setPort((int) object.get("value"));
+					logger.debug("Cambio de puerto de conexión " + EstadoInterno.getPort());
 					break;
 				case "auto":
 					EstadoInterno.setEntradasAutomaticas(((Boolean) object.get("value")).booleanValue());
+					logger.debug("Se permiten las entradas automáticas: " + EstadoInterno.isEntradasAutomaticas());
 					break;
 				case "I0":
 					EstadoInterno.setI0((int) object.get("value"));
+					logger.debug("I0 : " + EstadoInterno.getI0());
 					break;
 				case "I1":
 					EstadoInterno.setI1((int) object.get("value"));
+					logger.debug("I1 : " + EstadoInterno.getI1());
 					break;
 				case "I2":
 					EstadoInterno.setI2((int) object.get("value"));
+					logger.debug("I2 : " + EstadoInterno.getI2());
 					break;
 				case "I3":
 					EstadoInterno.setI3((int) object.get("value"));
+					logger.debug("I3 : " + EstadoInterno.getI3());
 					break;
 				case "O0":
 					EstadoInterno.setO0((boolean) object.get("value"));
+					logger.debug("O0 : " + EstadoInterno.getO0());
 					break;
 				case "O1":
 					EstadoInterno.setO1((boolean) object.get("value"));
+					logger.debug("O1 : " + EstadoInterno.getO1());
 					break;
 				case "O2":
 					EstadoInterno.setO2((boolean) object.get("value"));
+					logger.debug("O2 : " + EstadoInterno.getO2());
 					break;
 				case "O3":
 					EstadoInterno.setO3((boolean) object.get("value"));
+					logger.debug("O3 : " + EstadoInterno.getO3());
 					break;
 				}
 			}
 		} catch (ParseException | IOException e) {
-			logger.error(e.getLocalizedMessage());
+			logger.error("[error]" + e.getLocalizedMessage());
 		}
 	}
 

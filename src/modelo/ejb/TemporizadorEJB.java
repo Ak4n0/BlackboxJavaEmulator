@@ -27,7 +27,7 @@ public class TemporizadorEJB {
 	@EJB
 	WebSocketEJB webSocketEJB;
 	
-	@Schedule(second="0", minute="*/5", hour="*")
+	@Schedule(second="*/5", minute="*", hour="*")
 	private void enviarDatos(Timer t) {
 		String jwt = jwtEJB.generarInformacionIO();
 		httpEJB.comunicar(jwt);
