@@ -25,55 +25,52 @@ public class MensajeHttpEJB {
 	
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(MensajeHttpEJB.class);
 
-	private final String path = "/Centinela/blackbox/";
+	private final String path = "/Centinela/blackbox/mensajes";
 	private final String USER_AGENT = "Mozilla/5.0";
 	
 	private String doPost(String jwt) {
 		String ipServer = EstadoInterno.getIp();
 		int portServer = EstadoInterno.getPort();
 		
-		String POST_URL = ipServer + ":" + portServer + path;
+		String POST_URL = "http://" + ipServer + ":" + portServer + path;
 		
 		logger.info("Enviando mensaje a " + POST_URL + " con dato " + jwt);
-		String retval;
+		String retval = null;
+		
 		try {
-			String POST_PARAMS = jwt;
-			URL obj = new URL(POST_URL);
-			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+			URL url = new URL(POST_URL);
+			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestMethod("POST");
-			con.setRequestProperty("User-Agent", USER_AGENT);
-
-			// For POST only - START
+			con.setRequestProperty("Content-type", "text/plain; charset=utf-8");
+			con.setRequestProperty("Accept", "text/plain");
 			con.setDoOutput(true);
-			OutputStream os = con.getOutputStream();
-			os.write(POST_PARAMS.getBytes());
-			os.flush();
-			os.close();
-			// For POST only - END
-
+			con.setDoInput(true);
+			con.setRequestProperty("User-Agent", USER_AGENT);
+	
+			try(OutputStream os = con.getOutputStream()) {
+				byte[] input = jwt.getBytes("utf-8");
+				os.write(input, 0, input.length);
+				os.flush();
+			}
+			
 			int responseCode = con.getResponseCode();
 			logger.info("POST Response Code :: " + responseCode);
-
+	
 			if (responseCode == HttpURLConnection.HTTP_OK) { // success
-				BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-				String inputLine;
-				StringBuffer response = new StringBuffer();
-
-				while ((inputLine = in.readLine()) != null) {
-					response.append(inputLine);
+				StringBuilder response = new StringBuilder();
+				try(BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"))) {
+					
+					String responseLine = null;
+					while((responseLine = br.readLine()) != null) {
+						response.append(responseLine.trim());
+					}
 				}
-				in.close();
-
 				retval = response.toString();
-			} else {
-				logger.info("No se recibió HTTP_OK desde el post");
-				retval = null;
 			}
-		} catch (IOException e) {
-			logger.error("No se pudo generar el POST");
-			retval = null;
+		} catch(IOException e) {
+			logger.error("Error al formar el POST: " + e.getLocalizedMessage());
 		}
-		
+
 		return retval;
 	}
 	

@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <configuration debug="true">
-	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
-	<!-- <file>/opt/tomcat/webapps/Blackbox/blackbox.log</file> -->
+	<appender name="ECLIPSE" class="ch.qos.logback.core.FileAppender">
 		<file>blackbox.log</file>
+		<append>true</append>
+		<encoder>
+			<pattern>%date{"yyyy-MM-dd HH:mm:ss", Europe/Madrid} %-4relative[%thread] %-5level %logger{35} - %msg%n</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="TOMCAT" class="ch.qos.logback.core.FileAppender">
+		<file>/opt/tomcat/webapps/Blackbox/blackbox.log</file>
 		<append>true</append>
 		<encoder>
 			<pattern>%date{"yyyy-MM-dd HH:mm:ss", Europe/Madrid} %-4relative[%thread] %-5level %logger{35} - %msg%n</pattern>
@@ -11,6 +18,7 @@
 	</appender>
 
 	<root level="debug">
-		<appender-ref ref="FILE" />
+		<appender-ref ref="ECLIPSE" />
+		<appender-ref ref="TOMCAT" />
 	</root>
 </configuration>

@@ -3,6 +3,7 @@ package modelo.ejb;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -39,9 +40,7 @@ public class JwtEJB {
 		
 		// No se pudo validar, informar del error
 		if(jwt == null) {
-			 logger.info("Error al verificar el token");
-			 String respuesta = generarErrorValidacion();
-			 httpEJB.comunicar(respuesta);
+			 logger.error("Error al verificar el token");
 			 return;
 		}
 		
@@ -49,166 +48,83 @@ public class JwtEJB {
 		String subject = jwt.getSubject();
 		
 		switch(subject) {
-		case "pwd":
-			cambiarPwd(jwt);
+		case "SUB":
+			atenderModificaciones(jwt);
 			break;
-		case "umbral":
-			cambiarUmbral(jwt);
-			break;
-		case "salida":
-			cambiarSalida(jwt);
+		case "EOT":
+			// no hacer nada. No hubo modificaciones
 			break;
 		}
 	}
 	
-	private void cambiarPwd(DecodedJWT jwt) {
-		Claim claim = jwt.getClaim("valor");
-		if(claim == null) {
-			String respuesta = generarRespuestaPasswd(false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"pwd\" no existe");
-			return;
-		}
-		
-		String clave = claim.asString();
-		if(clave == null || clave.isEmpty()) {
-			String respuesta = generarRespuestaPasswd(false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"pwd\" vino vacío");
-			return;
-		}
-		
-		String respuesta = generarRespuestaPasswd(true);
-		httpEJB.comunicar(respuesta);
-		
-		EstadoInterno.setPassword(clave);
-		logger.info("Contraseña cambiada");
-	}
-	
-	private void cambiarUmbral(DecodedJWT jwt) {
+	void atenderModificaciones(DecodedJWT jwt) {
 		Claim claim;
 		
-		// Obtener el puerto
-		claim = jwt.getClaim("puerto");
-		if(claim == null) {
-			String respuesta = generarRespuestaUmbral(null, null, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"puerto\" no existe");
-			return;
+		// Cambio de password
+		claim = jwt.getClaim("pwd");
+		if(claim != null) {
+			cambiarPwd(claim.asString());
 		}
 		
-		String puerto = claim.asString();
-		if(puerto == null || !puerto.matches("I\\d+")) {
-			String respuesta = generarRespuestaUmbral(null, null, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"puerto\" no tiene un valor válido");
-			return;
-		}
-				
-		// Obtener el límite superior o inferior
-		claim = jwt.getClaim("limite");
-		if(claim == null) {
-			String respuesta = generarRespuestaUmbral(puerto, null, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"limite\" no existe");
-			return;
-		}
-		
-		String limite = claim.asString();
-		if(limite == null || !limite.equals("sup") || !limite.equals("inf")) {
-			String respuesta = generarRespuestaUmbral(puerto, null, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"limite\" no tiene un valor válido");
-			return;
-		}
-		
-		// Obtener el valor umbral
-		claim = jwt.getClaim("valor");
-		if(claim == null) {
-			String respuesta = generarRespuestaUmbral(puerto, limite, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"valor\" no existe");
-			return;
-		}
-		
-		Integer valor = claim.asInt();
-		if(valor != null) {
-			if(valor < 0 || valor > 255) {
-				String respuesta = generarRespuestaUmbral(puerto, limite, false);
-				httpEJB.comunicar(respuesta);
-				logger.error("El claim \"valor\" no tiene un valor válido");
-				return;
+		// Salidas
+		for(int n = 0; n < 4; ++n) {
+			String puerto = "O" + n;
+			claim = jwt.getClaim(puerto);
+			if(claim != null) {
+				cambiarSalida(puerto, claim.asBoolean());
 			}
 		}
 		
-		// Todos los datos son correctos. Actualizar el estado interno
+		// Umbrales
+		for(int n = 0; n < 4; ++n) {
+			String puerto = "I" + n;
+			claim = jwt.getClaim(puerto);
+			if(claim != null) {
+				cambiarUmbral(puerto, claim.asMap());
+			}
+		}
+	}
+	
+	private void cambiarPwd(String passwd) {
+		String respuesta = generarRespuestaPasswd(passwd);
+		httpEJB.comunicar(respuesta);
+		EstadoInterno.setPassword(passwd);
+		logger.info("Contraseña cambiada");
+	}
+	
+	private void cambiarUmbral(String puerto, Map<String, Object> umbral) {
+		Integer valor;
+		valor = (Integer) umbral.get("sup");
+		if(valor != null) {
+			nuevoUmbral(puerto, "sup", valor);
+		}
+		
+		valor = (Integer) umbral.get("inf");
+		if(valor != null) {
+			nuevoUmbral(puerto, "inf", valor);
+		}
+	}
+	
+	private void nuevoUmbral(String puerto, String umbral, int valor) {
 		try {
 			Method m = EstadoInterno.class.getDeclaredMethod("set"
-					+ (limite.equals("sup")? "Superior" : "Inferior")
+					+ (umbral.equals("sup")? "Superior" : "Inferior")
 					+ puerto, Integer.class);
 			m.invoke(null, valor);
-			String respuesta = generarRespuestaUmbral(puerto, limite, true);
-			httpEJB.comunicar(respuesta);
-			logger.info("Cambia el umbral " + limite + " del puerto " + puerto + " a " + valor);
+			logger.info("Cambia el umbral " + umbral + " del puerto " + puerto + " a " + valor);
 		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			logger.error("No existe el metodo para cambiar el umbral del puerto " + puerto + " o no se pudo proporcional el valor");
-			String respuesta = generarRespuestaUmbral(puerto, limite, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"valor\" no tiene un valor válido");
 			return;
 		}
 	}
 	
-	private void cambiarSalida(DecodedJWT jwt) {
-		Claim claim;
-		
-		// Obtener el puerto
-		claim = jwt.getClaim("puerto");
-		if(claim == null) {
-			String respuesta = generarRespuestaSalida(null, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"puerto\" no existe");
-			return;
-		}
-		
-		String puerto = claim.asString();
-		if(puerto == null || !puerto.matches("O\\d+")) {
-			String respuesta = generarRespuestaSalida(null, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"puerto\" no tiene un valor válido");
-			return;
-		}
-		
-		// Obtener el valor de salida
-		claim = jwt.getClaim("valor");
-		if(claim == null) {
-			String respuesta = generarRespuestaSalida(puerto, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"valor\" no existe");
-			return;
-		}
-		
-		Boolean valor = claim.asBoolean();
-		if(valor != null) {
-			String respuesta = generarRespuestaSalida(puerto, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"valor\" no tiene un valor válido");
-			return;
-		}
-		
-		// Todos los datos son correctos. Actualizar el estado interno
+	private void cambiarSalida(String puerto, boolean valor) {
 		try {
 			Method m = EstadoInterno.class.getDeclaredMethod("set" + puerto, Boolean.class);
 			m.invoke(null, valor);
-			String respuesta = generarRespuestaSalida(puerto, true);
-			httpEJB.comunicar(respuesta);
 			logger.info("Cambia el valor del puerto " + puerto + " a " + valor);
 		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			logger.error("No existe el metodo para cambiar el valor del puerto " + puerto);
-			String respuesta = generarRespuestaSalida(puerto, false);
-			httpEJB.comunicar(respuesta);
-			logger.error("El claim \"valor\" no tiene un valor válido");
-			return;
 		}
 	}
 	
@@ -235,42 +151,11 @@ public class JwtEJB {
 		return sign(token);
 	}
 
-	private String generarRespuestaPasswd(boolean success) {
-		String status = success? "ACK" : "NAK";
+	private String generarRespuestaPasswd(String passwd) {
 		Builder token = newCommonToken();
-		token.withSubject("respuesta");
-		token.withClaim("msg", "pwd");
-		token.withClaim("status", status);
+		token.withSubject("pwd");
+		token.withClaim("valor", passwd);
 	    return sign(token);
-	}
-	
-	private String generarRespuestaSalida(String puertoSalida, boolean success) {
-		String status = success? "ACK" : "NAK";
-		Builder token = newCommonToken();
-		token.withSubject("respuesta");
-		token.withClaim("msg", "salida");
-		token.withClaim("puerto", puertoSalida);
-		token.withClaim("status", status);
-	    return sign(token);
-	}
-	
-	private String generarRespuestaUmbral(String puertoEntrada, String limite, boolean success) {
-		String status = success? "ACK" : "NAK";
-		Builder token = newCommonToken();
-		token.withSubject("respuesta");
-		token.withClaim("msg", "salida");
-		token.withClaim("limite", limite);
-		token.withClaim("puerto", puertoEntrada);
-		token.withClaim("status", status);
-	    return sign(token);
-	}
-	
-	private String generarErrorValidacion() {
-		Builder token = newCommonToken();
-		token.withSubject("respuesta");
-		token.withClaim("msg", "validacion");
-		token.withClaim("status", "NAK");
-		return sign(token);
 	}
 	
 	private DecodedJWT decodificar(String token) {
