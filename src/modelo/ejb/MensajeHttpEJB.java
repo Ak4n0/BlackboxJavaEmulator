@@ -1,11 +1,12 @@
 package modelo.ejb;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -26,7 +27,8 @@ public class MensajeHttpEJB {
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(MensajeHttpEJB.class);
 
 	private final String path = "/Centinela/blackbox/mensajes";
-	private final String USER_AGENT = "Mozilla/5.0";
+	
+	private static HttpURLConnection con;
 	
 	private String doPost(String jwt) {
 		String ipServer = EstadoInterno.getIp();
@@ -37,38 +39,35 @@ public class MensajeHttpEJB {
 		logger.info("Enviando mensaje a " + POST_URL + " con dato " + jwt);
 		String retval = null;
 		
+		byte[] postData = jwt.getBytes(StandardCharsets.UTF_8);
 		try {
 			URL url = new URL(POST_URL);
-			HttpURLConnection con = (HttpURLConnection) url.openConnection();
-			con.setRequestMethod("POST");
-			con.setRequestProperty("Content-type", "text/plain; charset=utf-8");
-			con.setRequestProperty("Accept", "text/plain");
-			con.setDoOutput(true);
-			con.setDoInput(true);
-			con.setRequestProperty("User-Agent", USER_AGENT);
-	
-			try(OutputStream os = con.getOutputStream()) {
-				byte[] input = jwt.getBytes("utf-8");
-				os.write(input, 0, input.length);
-				os.flush();
-			}
+			con = (HttpURLConnection) url.openConnection();
 			
-			int responseCode = con.getResponseCode();
-			logger.info("POST Response Code :: " + responseCode);
-	
-			if (responseCode == HttpURLConnection.HTTP_OK) { // success
-				StringBuilder response = new StringBuilder();
-				try(BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"))) {
-					
-					String responseLine = null;
-					while((responseLine = br.readLine()) != null) {
-						response.append(responseLine.trim());
-					}
-				}
-				retval = response.toString();
-			}
-		} catch(IOException e) {
-			logger.error("Error al formar el POST: " + e.getLocalizedMessage());
+			con.setDoOutput(true);
+            con.setRequestMethod("POST");
+            con.setRequestProperty("User-Agent", "Java client");
+            con.setRequestProperty("Content-Type", "text/plain");
+            
+            try(DataOutputStream wr = new DataOutputStream(con.getOutputStream())) {
+            	wr.write(postData);
+            }
+            
+            StringBuilder content;
+            
+            try(BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+            	String line;
+            	content = new StringBuilder();
+            	
+            	while((line = br.readLine()) != null) {
+            		content.append(line);
+            	}
+            }
+            retval = content.toString();
+		} catch (IOException e) {
+			logger.error(e.getLocalizedMessage());
+		} finally {
+			con.disconnect();
 		}
 
 		return retval;

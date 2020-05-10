@@ -167,7 +167,7 @@ public class WebSocketEJB {
 		sessions.forEach((Session session) -> {
 			try {
 				session.getBasicRemote().sendText(json.toString());
-				logger.info("Enviando mensaje: " + json.toString());
+				logger.debug("Enviando mensaje: " + json.toString());
 			} catch (IOException e) {
 				logger.error(e.getLocalizedMessage());
 			}

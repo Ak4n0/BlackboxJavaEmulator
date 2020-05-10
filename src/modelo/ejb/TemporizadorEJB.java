@@ -28,11 +28,20 @@ public class TemporizadorEJB {
 	WebSocketEJB webSocketEJB;
 	
 	@Schedule(second="*/5", minute="*", hour="*")
+	private void sincronia(Timer t) {
+		String jwt = jwtEJB.generarSincronia();
+		httpEJB.comunicar(jwt);
+		logger.debug("Enviando sincronia");
+	}
+	
+	@Schedule(second="*/10", minute="*", hour="*")
 	private void enviarDatos(Timer t) {
 		String jwt = jwtEJB.generarInformacionIO();
 		httpEJB.comunicar(jwt);
-		logger.info("Enviada la información I/O");
+		logger.debug("Enviada la información I/O");
 	}
+	
+	
 	
 	@Schedule(second="*/1", minute="*", hour="*")
 	private void simularNuevoDato(Timer t) {

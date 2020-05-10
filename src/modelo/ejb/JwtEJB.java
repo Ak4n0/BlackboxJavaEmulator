@@ -150,6 +150,12 @@ public class JwtEJB {
 		token.withClaim("umbral", alarma.getValorLimite());
 		return sign(token);
 	}
+	
+	public String generarSincronia() {
+		Builder token = newCommonToken();
+		token.withSubject("SYN");
+		return sign(token);
+	}
 
 	private String generarRespuestaPasswd(String passwd) {
 		Builder token = newCommonToken();
@@ -186,4 +192,6 @@ public class JwtEJB {
 		Algorithm algorithm = Algorithm.HMAC256(EstadoInterno.getPassword());
 		return token.sign(algorithm);
 	}
+
+	
 }
