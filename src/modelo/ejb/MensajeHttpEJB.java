@@ -30,6 +30,11 @@ public class MensajeHttpEJB {
 	
 	private static HttpURLConnection con;
 	
+	/**
+	 * Envia a Centinela un JWT
+	 * @param jwt JWT con los datos que quiere transmitir
+	 * @return JWT con la respuesta del servidor
+	 */
 	private String doPost(String jwt) {
 		String ipServer = EstadoInterno.getIp();
 		int portServer = EstadoInterno.getPort();
@@ -73,6 +78,10 @@ public class MensajeHttpEJB {
 		return retval;
 	}
 	
+	/**
+	 * Iniciar una transmision con el servidor Centinela
+	 * @param jwt JWT con la información que se quiere transmitir
+	 */
 	public void comunicar(String jwt) {
 		String respuesta = doPost(jwt);
 		logger.debug("Respuesta: " + respuesta);

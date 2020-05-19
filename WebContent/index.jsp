@@ -57,6 +57,29 @@
 		<label for="I3">Entrada 3: </label><input type="number" id="I3" min="0" max="255" step="1" readonly><button id="btnI3" disabled>Modificar</button><br>		
 		<input type="checkbox" id="chkAuto" checked/><label for="automatico">Entradas automáticas</label>
 	</fieldset>
+	<fieldset class="fila">
+		<legend>Limites:</legend>
+		<fieldset>
+			<legend>I0</legend>
+			<label for="I0inf">Inferior: </label><input type="text" id="I0inf" maxlength="4" size="4"readonly>
+			<label for="I0sup">Superior: </label><input type="text" id="I0sup" maxlength="4" size="4"readonly>
+		</fieldset>
+		<fieldset>
+			<legend>I1</legend>
+			<label for="I1inf">Inferior: </label><input type="text" id="I1inf" maxlength="4" size="4"readonly>
+			<label for="I1sup">Superior: </label><input type="text" id="I1sup" maxlength="4" size="4"readonly>
+		</fieldset>
+		<fieldset>
+			<legend>I2</legend>
+			<label for="I2inf">Inferior: </label><input type="text" id="I2inf" maxlength="4" size="4"readonly>
+			<label for="I2sup">Superior: </label><input type="text" id="I2sup" maxlength="4" size="4"readonly>
+		</fieldset>
+		<fieldset>
+			<legend>I3</legend>
+			<label for="I3inf">Inferior: </label><input type="text" id="I3inf" maxlength="4" size="4"readonly>
+			<label for="I3sup">Superior: </label><input type="text" id="I3sup" maxlength="4" size="4"readonly>
+		</fieldset>
+	</fieldset>
 	<fieldset>
 		<legend>Log</legend>
 		<div id="logger">

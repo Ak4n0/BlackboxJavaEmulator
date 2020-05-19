@@ -1,8 +1,6 @@
 package modelo.ejb;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -122,56 +120,83 @@ public class WebSocketEJB {
 		logger.error("[error] " + e.getLocalizedMessage());
 	}
 	
-	/////////////////////////////// auxiliares //////////////////////////////////////
+	/////////////////////////////// mensajes hacia el cliente //////////////////////////////////////
 	
-	private String strfmt(String cadena) {
-		return "\"" + cadena + "\"";
-	}
-	
+	@SuppressWarnings("unchecked")
 	private String getInit() {
-		StringBuilder json = new StringBuilder();
-		json.append("{");
-		json.append(strfmt("type")).append(':').append(strfmt("init")).append(',');
-		json.append(strfmt("id")).append(':').append(strfmt(EstadoInterno.getId())).append(',');
-		json.append(strfmt("pwd")).append(':').append(strfmt(EstadoInterno.getPassword())).append(',');
-		json.append(strfmt("ip")).append(':').append(strfmt(EstadoInterno.getIp())).append(',');
-		json.append(strfmt("port")).append(':').append(EstadoInterno.getPort()).append(',');
-		json.append(strfmt("auto")).append(':').append(EstadoInterno.isEntradasAutomaticas()).append(',');
-		for(Method metodo: EstadoInterno.class.getDeclaredMethods()) {
-			String nombreMetodo = metodo.getName();
-			if(nombreMetodo.matches("get[IO]\\d+")) {
-				String puerto = nombreMetodo.replace("get", "");
-				try {
-					if(puerto.charAt(0) == 'I') {
-						json.append(strfmt(puerto)).append(':').append((Integer)metodo.invoke(null, (Object[]) null)).append(',');
-					} else if(puerto.charAt(0) == 'O') {
-						json.append(strfmt(puerto)).append(':').append((boolean)metodo.invoke(null, (Object[]) null)).append(',');
-					}
-				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					logger.error(e.getLocalizedMessage());
-				}
-			}
-		}
-		String retVal = json.substring(0, json.length()-1);
-		retVal += "}";
-		return retVal;
+		JSONObject obj = new JSONObject();
+		obj.put("type", "init");
+		obj.put("id", EstadoInterno.getId());
+		obj.put("pwd", EstadoInterno.getPassword());
+		obj.put("ip", EstadoInterno.getIp());
+		obj.put("port", EstadoInterno.getPort());
+		obj.put("auto", EstadoInterno.isEntradasAutomaticas());
+		obj.put("I0inf", EstadoInterno.getInferiorI0());
+		obj.put("I0sup", EstadoInterno.getSuperiorI0());
+		obj.put("I1inf", EstadoInterno.getInferiorI1());
+		obj.put("I1sup", EstadoInterno.getSuperiorI1());
+		obj.put("I2inf", EstadoInterno.getInferiorI2());
+		obj.put("I2sup", EstadoInterno.getSuperiorI2());
+		obj.put("I3inf", EstadoInterno.getInferiorI3());
+		obj.put("I3sup", EstadoInterno.getSuperiorI3());
+		obj.put("I0", EstadoInterno.getI0());
+		obj.put("I1", EstadoInterno.getI1());
+		obj.put("I2", EstadoInterno.getI2());
+		obj.put("I3", EstadoInterno.getI3());
+		obj.put("O0", EstadoInterno.getO0());
+		obj.put("O1", EstadoInterno.getO1());
+		obj.put("O2", EstadoInterno.getO2());
+		obj.put("O3", EstadoInterno.getO3());
+		
+		return obj.toString();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void enviarEntrada(String entrada, int valor) {
-		StringBuilder json = new StringBuilder();
-		json.append("{");
-		json.append(strfmt("type")).append(':').append(strfmt("mod")).append(',');
-		json.append(strfmt("param")).append(':').append(strfmt(entrada)).append(',');
-		json.append(strfmt("value")).append(':').append(valor);
-		json.append('}');
+		JSONObject obj = new JSONObject();
+		obj.put("type", "mod");
+		obj.put("param", entrada);
+		obj.put("value", valor);
 		sessions.forEach((Session session) -> {
 			try {
-				session.getBasicRemote().sendText(json.toString());
-				logger.debug("Enviando mensaje: " + json.toString());
+				session.getBasicRemote().sendText(obj.toString());
+				logger.debug("Enviando mensaje: " + obj.toString());
 			} catch (IOException e) {
 				logger.error(e.getLocalizedMessage());
 			}
 		});
-		
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void enviarSalida(String salida, boolean valor) {
+		JSONObject obj = new JSONObject();
+		obj.put("type", "mod");
+		obj.put("param", salida);
+		obj.put("value", valor);
+		sessions.forEach((Session session) -> {
+			try {
+				session.getBasicRemote().sendText(obj.toString());
+				logger.debug("Enviando mensaje: " + obj.toString());
+			} catch (IOException e) {
+				logger.error(e.getLocalizedMessage());
+			}
+		});
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void enviarLimite(String entrada, String limite, int valor) {
+		JSONObject obj = new JSONObject();
+		obj.put("type", "mod");
+		obj.put("param", entrada);
+		obj.put("limit", limite);
+		obj.put("value", valor);
+		sessions.forEach((Session session) -> {
+			try {
+				session.getBasicRemote().sendText(obj.toString());
+				logger.debug("Enviando mensaje: " + obj.toString());
+			} catch (IOException e) {
+				logger.error(e.getLocalizedMessage());
+			}
+		});
 	}
 }

@@ -1,7 +1,5 @@
 package modelo.ejb;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Map;
 
@@ -32,9 +30,11 @@ public class JwtEJB {
 	@EJB
 	MensajeHttpEJB httpEJB;
 	
+	@EJB
+	WebSocketEJB webSocketEJB;
+	
 	public void interpretar(String token) {
 		logger.debug("Token a interpretar: " + token);
-		
 		// Validar el token
 		DecodedJWT jwt = decodificar(token);
 		
@@ -59,10 +59,9 @@ public class JwtEJB {
 	
 	void atenderModificaciones(DecodedJWT jwt) {
 		Claim claim;
-		
 		// Cambio de password
 		claim = jwt.getClaim("pwd");
-		if(claim != null) {
+		if(!claim.isNull()) {
 			cambiarPwd(claim.asString());
 		}
 		
@@ -70,7 +69,7 @@ public class JwtEJB {
 		for(int n = 0; n < 4; ++n) {
 			String puerto = "O" + n;
 			claim = jwt.getClaim(puerto);
-			if(claim != null) {
+			if(!claim.isNull()) {
 				cambiarSalida(puerto, claim.asBoolean());
 			}
 		}
@@ -79,7 +78,7 @@ public class JwtEJB {
 		for(int n = 0; n < 4; ++n) {
 			String puerto = "I" + n;
 			claim = jwt.getClaim(puerto);
-			if(claim != null) {
+			if(!claim.isNull()) {
 				cambiarUmbral(puerto, claim.asMap());
 			}
 		}
@@ -106,26 +105,54 @@ public class JwtEJB {
 	}
 	
 	private void nuevoUmbral(String puerto, String umbral, int valor) {
-		try {
-			Method m = EstadoInterno.class.getDeclaredMethod("set"
-					+ (umbral.equals("sup")? "Superior" : "Inferior")
-					+ puerto, Integer.class);
-			m.invoke(null, valor);
-			logger.info("Cambia el umbral " + umbral + " del puerto " + puerto + " a " + valor);
-		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			logger.error("No existe el metodo para cambiar el umbral del puerto " + puerto + " o no se pudo proporcional el valor");
-			return;
+		switch(puerto) {
+		case "I0":
+			if(umbral.equals("sup")) {
+				EstadoInterno.setSuperiorI0(valor);
+			} else {
+				EstadoInterno.setInferiorI0(valor);
+			}
+			break;
+		case "I1":
+			if(umbral.equals("sup")) {
+				EstadoInterno.setSuperiorI1(valor);
+			} else {
+				EstadoInterno.setInferiorI1(valor);
+			}
+			break;
+		case "I2":
+			if(umbral.equals("sup")) {
+				EstadoInterno.setSuperiorI2(valor);
+			} else {
+				EstadoInterno.setInferiorI2(valor);
+			}
+			break;
+		case "I3":
+			if(umbral.equals("sup")) {
+				EstadoInterno.setSuperiorI3(valor);
+			} else {
+				EstadoInterno.setInferiorI3(valor);
+			}
+			break;
 		}
 	}
 	
 	private void cambiarSalida(String puerto, boolean valor) {
-		try {
-			Method m = EstadoInterno.class.getDeclaredMethod("set" + puerto, Boolean.class);
-			m.invoke(null, valor);
-			logger.info("Cambia el valor del puerto " + puerto + " a " + valor);
-		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			logger.error("No existe el metodo para cambiar el valor del puerto " + puerto);
+		switch(puerto) {
+		case "O0":
+			EstadoInterno.setO0(valor);
+			break;
+		case "O1":
+			EstadoInterno.setO1(valor);
+			break;
+		case "O2":
+			EstadoInterno.setO2(valor);
+			break;
+		case "O3":
+			EstadoInterno.setO3(valor);
+			break;
 		}
+		webSocketEJB.enviarSalida(puerto, valor);
 	}
 	
 	public String generarInformacionIO() {

@@ -2,7 +2,7 @@ let socket;
 
 function inicializar() {
 	// inicializar variables globales
-	socket = new WebSocket("ws://" + myServer + ":8080/Blackbox/ws");
+	socket = new WebSocket("ws://" + myServer + ":8081/Blackbox/ws");
 	
 	inicializarComponentes();
 	inicializarWebsocket();
@@ -202,9 +202,14 @@ function inicializarWebsocket() {
 			doInit(obj);
 			break;
 		case "mod":
-			if(/I\d+/.test(obj.param)) {
+			if(/^I\d+$/.test(obj.param)) {
 				element(obj.param).value = obj.value;
 			}
+
+			if(/^O\d+$/.test(obj.param)) {
+				element(obj.param).checked = obj.value;
+			}
+			break;
 		}
 	};
 
@@ -271,4 +276,12 @@ function doInit(object) {
 	element("I1").value = object.I1;
 	element("I2").value = object.I2;
 	element("I3").value = object.I3;
+	element("I0inf").value = object.I0inf;
+	element("I0sup").value = object.I0sup;
+	element("I1inf").value = object.I1inf;
+	element("I1sup").value = object.I1sup;
+	element("I2inf").value = object.I2inf;
+	element("I2sup").value = object.I2sup;
+	element("I3inf").value = object.I3inf;
+	element("I3sup").value = object.I3sup;
 }
