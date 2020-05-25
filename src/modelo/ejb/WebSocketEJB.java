@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.enterprise.context.ApplicationScoped;
 import javax.websocket.OnClose;
@@ -19,6 +20,7 @@ import org.jose4j.json.internal.json_simple.parser.ParseException;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Logger;
+import modelo.pojo.Alarma;
 import modelo.pojo.EstadoInterno;
 
 @Singleton
@@ -29,6 +31,12 @@ public class WebSocketEJB {
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(WebSocketEJB.class);
 	
 	private static Set<Session> sessions = new HashSet<>();
+	
+	@EJB
+	JwtEJB jwtEJB;
+	
+	@EJB
+	MensajeHttpEJB httpEJB;
 	
 	@OnOpen
 	public void onOpen(Session session) {
@@ -72,18 +80,82 @@ public class WebSocketEJB {
 					break;
 				case "I0":
 					EstadoInterno.setI0((int) object.get("value"));
+					if(EstadoInterno.getSuperiorI0() != null && EstadoInterno.getI0() > EstadoInterno.getSuperiorI0()) {
+						Alarma alarma = new Alarma();
+						alarma.setPuerto("I0");
+						alarma.setValorLimite(EstadoInterno.getSuperiorI0());
+						alarma.setValorPuerto(EstadoInterno.getI0());
+						String jwt = jwtEJB.generarInformacionAlarma(alarma);
+						httpEJB.comunicar(jwt);
+					}
+					if(EstadoInterno.getInferiorI0() != null && EstadoInterno.getI0() < EstadoInterno.getSuperiorI0()) {
+						Alarma alarma = new Alarma();
+						alarma.setPuerto("I0");
+						alarma.setValorLimite(EstadoInterno.getInferiorI0());
+						alarma.setValorPuerto(EstadoInterno.getI0());
+						String jwt = jwtEJB.generarInformacionAlarma(alarma);
+						httpEJB.comunicar(jwt);
+					}
 					logger.debug("I0 : " + EstadoInterno.getI0());
 					break;
 				case "I1":
 					EstadoInterno.setI1((int) object.get("value"));
+					if(EstadoInterno.getSuperiorI1() != null && EstadoInterno.getI1() > EstadoInterno.getSuperiorI1()) {
+						Alarma alarma = new Alarma();
+						alarma.setPuerto("I1");
+						alarma.setValorLimite(EstadoInterno.getSuperiorI1());
+						alarma.setValorPuerto(EstadoInterno.getI1());
+						String jwt = jwtEJB.generarInformacionAlarma(alarma);
+						httpEJB.comunicar(jwt);
+					}
+					if(EstadoInterno.getInferiorI1() != null && EstadoInterno.getI1() < EstadoInterno.getSuperiorI1()) {
+						Alarma alarma = new Alarma();
+						alarma.setPuerto("I1");
+						alarma.setValorLimite(EstadoInterno.getInferiorI1());
+						alarma.setValorPuerto(EstadoInterno.getI1());
+						String jwt = jwtEJB.generarInformacionAlarma(alarma);
+						httpEJB.comunicar(jwt);
+					}
 					logger.debug("I1 : " + EstadoInterno.getI1());
 					break;
 				case "I2":
 					EstadoInterno.setI2((int) object.get("value"));
+					if(EstadoInterno.getSuperiorI2() != null && EstadoInterno.getI2() > EstadoInterno.getSuperiorI2()) {
+						Alarma alarma = new Alarma();
+						alarma.setPuerto("I2");
+						alarma.setValorLimite(EstadoInterno.getSuperiorI2());
+						alarma.setValorPuerto(EstadoInterno.getI2());
+						String jwt = jwtEJB.generarInformacionAlarma(alarma);
+						httpEJB.comunicar(jwt);
+					}
+					if(EstadoInterno.getInferiorI2() != null && EstadoInterno.getI2() < EstadoInterno.getSuperiorI2()) {
+						Alarma alarma = new Alarma();
+						alarma.setPuerto("I2");
+						alarma.setValorLimite(EstadoInterno.getInferiorI2());
+						alarma.setValorPuerto(EstadoInterno.getI2());
+						String jwt = jwtEJB.generarInformacionAlarma(alarma);
+						httpEJB.comunicar(jwt);
+					}
 					logger.debug("I2 : " + EstadoInterno.getI2());
 					break;
 				case "I3":
 					EstadoInterno.setI3((int) object.get("value"));
+					if(EstadoInterno.getSuperiorI3() != null && EstadoInterno.getI3() > EstadoInterno.getSuperiorI3()) {
+						Alarma alarma = new Alarma();
+						alarma.setPuerto("I3");
+						alarma.setValorLimite(EstadoInterno.getSuperiorI3());
+						alarma.setValorPuerto(EstadoInterno.getI3());
+						String jwt = jwtEJB.generarInformacionAlarma(alarma);
+						httpEJB.comunicar(jwt);
+					}
+					if(EstadoInterno.getInferiorI3() != null && EstadoInterno.getI3() < EstadoInterno.getSuperiorI3()) {
+						Alarma alarma = new Alarma();
+						alarma.setPuerto("I3");
+						alarma.setValorLimite(EstadoInterno.getInferiorI3());
+						alarma.setValorPuerto(EstadoInterno.getI3());
+						String jwt = jwtEJB.generarInformacionAlarma(alarma);
+						httpEJB.comunicar(jwt);
+					}
 					logger.debug("I3 : " + EstadoInterno.getI3());
 					break;
 				case "O0":
