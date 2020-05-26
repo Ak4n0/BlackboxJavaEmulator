@@ -7,12 +7,15 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
 
 import org.slf4j.LoggerFactory;
+
+import com.auth0.jwt.JWT;
 
 import ch.qos.logback.classic.Logger;
 import modelo.pojo.EstadoInterno;
@@ -84,9 +87,16 @@ public class MensajeHttpEJB {
 	 */
 	public void comunicar(String jwt) {
 		String respuesta = doPost(jwt);
-		logger.debug("Respuesta: " + respuesta);
+		logger.debug("Respuesta: " + verPayload(jwt));
 		if(respuesta != null) {
 			jwtEJB.interpretar(respuesta);
 		}
+	}
+	
+	private String verPayload(String jwt) {
+		String payload = JWT.decode(jwt).getPayload();
+		byte[] decodedBytes = Base64.getDecoder().decode(payload);
+		String retValue = new String(decodedBytes);
+		return retValue;
 	}
 }

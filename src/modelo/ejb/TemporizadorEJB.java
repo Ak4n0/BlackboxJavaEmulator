@@ -1,7 +1,5 @@
 package modelo.ejb;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
@@ -27,6 +25,16 @@ public class TemporizadorEJB {
 	@EJB
 	WebSocketEJB webSocketEJB;
 	
+	@Schedule(second="*", minute="*", hour="*")
+	private void inicializar(Timer t) {
+		if(EstadoInterno.isInicializado() == false) {
+			String jwt = jwtEJB.init();
+			httpEJB.comunicar(jwt);
+			logger.debug("Enviando inicialización");
+			EstadoInterno.setInicializado(true);
+		}
+	}
+	
 	@Schedule(second="*/5", minute="*", hour="*")
 	private void sincronia(Timer t) {
 		String jwt = jwtEJB.generarSincronia();
@@ -47,63 +55,81 @@ public class TemporizadorEJB {
 	private void simularNuevoDato(Timer t) {
 		// Entras automáticas activado?
 		if(EstadoInterno.isEntradasAutomaticas()) {
-			// Obtiene todos los métodos de EstadoInterno
-			Method[] metodos = EstadoInterno.class.getDeclaredMethods();
-			for(Method entrada: metodos) {
-				// Filtra los métodos por nombre: set Ix(...)
-				if(entrada.getName().matches("setI\\d+")) {
-					try {
-						String puerto = entrada.getName().replace("set", "");
-						int valor = (int) (Math.random() * 256);
-						// Ejecuta el método con un valor aleatorio
-						entrada.invoke(null, valor);
-						// Envia al emulador el valor conseguido junto al puerto
-						webSocketEJB.enviarEntrada(puerto, valor);
-						// Envia el logger el valor conseguido junto al puerto
-						logger.debug("... para puerto " + puerto + ", valor " + valor);
-						// Comrpbar si el método activa una alarma
-						// obtine los valores límite si están definidos
-						Integer limiteSuperior = null;
-						Integer limiteInferior = null;
-						try {
-							Method getLimiteSuperior = EstadoInterno.class.getDeclaredMethod("getSuperior" + entrada, (Class<?>[]) null);
-							limiteSuperior = (Integer) getLimiteSuperior.invoke(null, (Object[]) null);
-							
-						} catch (NoSuchMethodException | SecurityException e) {
-							// no hacer nada
-						}
-						try {
-							Method getLimiteInferior = EstadoInterno.class.getDeclaredMethod("getInferior" + entrada, (Class<?>[]) null);
-							limiteInferior = (Integer) getLimiteInferior.invoke(null, (Object[]) null);
-						} catch (NoSuchMethodException | SecurityException e) {
-							// no hacer nada
-						}
-						// Si están definidos los compara con el valor conseguido
-						if(limiteSuperior != null) {
-							if(limiteSuperior >= valor) {
-								Alarma alarma = new Alarma();
-								alarma.setPuerto(puerto);
-								alarma.setValorLimite(limiteSuperior);
-								alarma.setValorPuerto(valor);
-								String token = jwtEJB.generarInformacionAlarma(alarma);
-								httpEJB.comunicar(token);
-							}
-						}
-						if(limiteInferior != null) {
-							if(limiteInferior <= valor) {
-								Alarma alarma = new Alarma();
-								alarma.setPuerto(puerto);
-								alarma.setValorLimite(limiteSuperior);
-								alarma.setValorPuerto(valor);
-								String token = jwtEJB.generarInformacionAlarma(alarma);
-								httpEJB.comunicar(token);
-							}
-						}
-					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-						logger.error(e.getMessage());
-					}
+			int valor;
+			String puerto;
+			
+			valor = (int) (Math.random() * 256);
+			puerto = "I0";
+			EstadoInterno.setI0(valor);
+			webSocketEJB.enviarEntrada(puerto, valor);
+			if(EstadoInterno.getSuperiorI0() != null) {
+				if(EstadoInterno.getSuperiorI0() < valor) {
+					generarAlarma(puerto, EstadoInterno.getSuperiorI0(), valor);
 				}
 			}
+			if(EstadoInterno.getInferiorI0() != null) {
+				if(EstadoInterno.getInferiorI0() > valor) {
+					generarAlarma(puerto, EstadoInterno.getInferiorI0(), valor);
+				}
+			}
+			logger.debug("... para puerto " + puerto + ", valor " + valor);
+			
+			valor = (int) (Math.random() * 256);
+			puerto = "I1";
+			EstadoInterno.setI1(valor);
+			webSocketEJB.enviarEntrada(puerto, valor);
+			if(EstadoInterno.getSuperiorI1() != null) {
+				if(EstadoInterno.getSuperiorI1() < valor) {
+					generarAlarma(puerto, EstadoInterno.getSuperiorI1(), valor);
+				}
+			}
+			if(EstadoInterno.getInferiorI1() != null) {
+				if(EstadoInterno.getInferiorI1() > valor) {
+					generarAlarma(puerto, EstadoInterno.getInferiorI1(), valor);
+				}
+			}
+			logger.debug("... para puerto " + puerto + ", valor " + valor);
+			
+			valor = (int) (Math.random() * 256);
+			puerto = "I2";
+			EstadoInterno.setI2(valor);
+			webSocketEJB.enviarEntrada("I2", valor);
+			if(EstadoInterno.getSuperiorI2() != null) {
+				if(EstadoInterno.getSuperiorI2() < valor) {
+					generarAlarma(puerto, EstadoInterno.getSuperiorI2(), valor);
+				}
+			}
+			if(EstadoInterno.getInferiorI2() != null) {
+				if(EstadoInterno.getInferiorI2() > valor) {
+					generarAlarma(puerto, EstadoInterno.getInferiorI2(), valor);
+				}
+			}
+			logger.debug("... para puerto " + puerto + ", valor " + valor);
+			
+			valor = (int) (Math.random() * 256);
+			puerto = "I3";
+			EstadoInterno.setI3(valor);
+			webSocketEJB.enviarEntrada("I3", valor);
+			if(EstadoInterno.getSuperiorI3() != null) {
+				if(EstadoInterno.getSuperiorI3() < valor) {
+					generarAlarma(puerto, EstadoInterno.getSuperiorI3(), valor);
+				}
+			}
+			if(EstadoInterno.getInferiorI3() != null) {
+				if(EstadoInterno.getInferiorI3() > valor) {
+					generarAlarma(puerto, EstadoInterno.getInferiorI3(), valor);
+				}
+			}
+			logger.debug("... para puerto " + puerto + ", valor " + valor);
 		}
+	}
+	
+	private void generarAlarma(String puerto, Integer umbral, Integer valor) {
+		Alarma alarma = new Alarma();
+		alarma.setPuerto(puerto);
+		alarma.setValorLimite(umbral);
+		alarma.setValorPuerto(valor);
+		String jwt = jwtEJB.generarInformacionAlarma(alarma);
+		httpEJB.comunicar(jwt);
 	}
 }

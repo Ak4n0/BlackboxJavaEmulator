@@ -23,6 +23,11 @@ import modelo.pojo.EstadoInterno;
 
 @Stateless
 @LocalBean
+/**
+ * Clase biblioteca de funciones útiles para Javascript Web Tokens
+ * @author mique
+ *
+ */
 public class JwtEJB {
 
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(JwtEJB.class);
@@ -33,6 +38,10 @@ public class JwtEJB {
 	@EJB
 	WebSocketEJB webSocketEJB;
 	
+	/**
+	 * Interpreta un JWT y realiza diferentes acciones según lo que este indica
+	 * @param token Cadena que representa un JWT
+	 */
 	public void interpretar(String token) {
 		logger.debug("Token a interpretar: " + token);
 		// Validar el token
@@ -57,7 +66,11 @@ public class JwtEJB {
 		}
 	}
 	
-	void atenderModificaciones(DecodedJWT jwt) {
+	/**
+	 * Realiza las modificaciones al estado interno según mandato del JWT
+	 * @param jwt DecodedJWT con las instrucciones para modificar el estado interno
+	 */
+	private void atenderModificaciones(DecodedJWT jwt) {
 		Claim claim;
 		// Cambio de password
 		claim = jwt.getClaim("pwd");
@@ -84,6 +97,20 @@ public class JwtEJB {
 		}
 	}
 	
+	/**
+	 * Pide la información de estado del servidor para arrancar con ella
+	 * @return
+	 */
+	public String init() {
+		Builder token = newCommonToken();
+		token.withClaim("sub", "init");
+		return sign(token);
+	}
+	
+	/**
+	 * Inicia las tareas para cambiar el password
+	 * @param passwd La nueva contraseña que va a tener la blackbox
+	 */
 	private void cambiarPwd(String passwd) {
 		String respuesta = generarRespuestaPasswd(passwd);
 		httpEJB.comunicar(respuesta);
@@ -91,6 +118,11 @@ public class JwtEJB {
 		logger.info("Contraseña cambiada");
 	}
 	
+	/**
+	 * Cambia el umbral de una entrada
+	 * @param puerto Puerto al que se debe cambiar el umbral
+	 * @param umbral Información sobre el umbral a cambiar
+	 */
 	private void cambiarUmbral(String puerto, Map<String, Object> umbral) {
 		Integer valor;
 		valor = (Integer) umbral.get("sup");
@@ -104,39 +136,62 @@ public class JwtEJB {
 		}
 	}
 	
+	/**
+	 * Cambia el valor umbral de un puerto
+	 * @param puerto Nombre del puerto al que se cambia el umbral
+	 * @param umbral "sup" para el umbral superior, "inf" para el umbral inferior
+	 * @param valor Nuevo valor para el umbral.
+	 */
 	private void nuevoUmbral(String puerto, String umbral, int valor) {
 		switch(puerto) {
 		case "I0":
 			if(umbral.equals("sup")) {
 				EstadoInterno.setSuperiorI0(valor);
-			} else {
+				webSocketEJB.enviarLimite(puerto, umbral, valor);
+			} 
+			if(umbral.equals("inf")) {
 				EstadoInterno.setInferiorI0(valor);
+				webSocketEJB.enviarLimite(puerto, umbral, valor);
 			}
 			break;
 		case "I1":
 			if(umbral.equals("sup")) {
 				EstadoInterno.setSuperiorI1(valor);
-			} else {
+				webSocketEJB.enviarLimite(puerto, umbral, valor);
+			} 
+			if(umbral.equals("inf")) {
 				EstadoInterno.setInferiorI1(valor);
+				webSocketEJB.enviarLimite(puerto, umbral, valor);
 			}
 			break;
 		case "I2":
 			if(umbral.equals("sup")) {
 				EstadoInterno.setSuperiorI2(valor);
-			} else {
+				webSocketEJB.enviarLimite(puerto, umbral, valor);
+			} 
+			if(umbral.equals("inf")) {
 				EstadoInterno.setInferiorI2(valor);
+				webSocketEJB.enviarLimite(puerto, umbral, valor);
 			}
 			break;
 		case "I3":
 			if(umbral.equals("sup")) {
 				EstadoInterno.setSuperiorI3(valor);
-			} else {
+				webSocketEJB.enviarLimite(puerto, umbral, valor);
+			} 
+			if(umbral.equals("inf")) {
 				EstadoInterno.setInferiorI3(valor);
+				webSocketEJB.enviarLimite(puerto, umbral, valor);
 			}
 			break;
 		}
 	}
 	
+	/**
+	 * Cambia el estado de una salida
+	 * @param puerto Puerto de salida a cambiar
+	 * @param valor Nuevo valor para la salida
+	 */
 	private void cambiarSalida(String puerto, boolean valor) {
 		switch(puerto) {
 		case "O0":
@@ -155,6 +210,10 @@ public class JwtEJB {
 		webSocketEJB.enviarSalida(puerto, valor);
 	}
 	
+	/**
+	 * Devuelve un token JWT con la información de las entradas/salidas actuales
+	 * @return Cadena token JWT con información de las I/O
+	 */
 	public String generarInformacionIO() {
 		Builder token = newCommonToken();
 		token.withSubject("regular");
@@ -169,6 +228,11 @@ public class JwtEJB {
 	    return sign(token);
 	}
 	
+	/**
+	 * Devuelve un token JWT con la información de una alarma que se ha disparado
+	 * @param alarma Alarma con la información del puerto, el valor y el umbral que han hecho que se disparara
+	 * @return Cadena token JWT con información de la alarma
+	 */
 	public String generarInformacionAlarma(Alarma alarma) {
 		Builder token = newCommonToken();
 		token.withSubject("alarma");
@@ -178,12 +242,21 @@ public class JwtEJB {
 		return sign(token);
 	}
 	
+	/**
+	 * Devuelve un token JWT para realizar una sincronía con el servidor
+	 * @return Cadena token JWT con una petición de sintonía
+	 */
 	public String generarSincronia() {
 		Builder token = newCommonToken();
 		token.withSubject("SYN");
 		return sign(token);
 	}
 
+	/**
+	 * Devuelve un token JWT con una petición de cambio de contraseña
+	 * @param passwd Nueva contraseña que se desea que guarde el servidor
+	 * @return Cadena token JWT con una petición de nueva contraseña
+	 */
 	private String generarRespuestaPasswd(String passwd) {
 		Builder token = newCommonToken();
 		token.withSubject("pwd");
@@ -191,6 +264,11 @@ public class JwtEJB {
 	    return sign(token);
 	}
 	
+	/**
+	 * Certifica y decodifica un token JWT
+	 * @param token Token JWT que se debe decodificar
+	 * @return Devuelve un DecodedJWT si se pudo certificar el JWT, null en caso contrario
+	 */
 	private DecodedJWT decodificar(String token) {
 		DecodedJWT jwt;
 		try {
@@ -207,6 +285,10 @@ public class JwtEJB {
 		return jwt;
 	}
 	
+	/**
+	 * Inicia un JWT con información común a todos los que se van a transmitir
+	 * @return Un objeto Builder con la información común a todos los JWT
+	 */
 	private Builder newCommonToken() {
 		Builder token = JWT.create();
 		token.withIssuer(EstadoInterno.getId());
@@ -215,6 +297,11 @@ public class JwtEJB {
 		return token;
 	}
 	
+	/**
+	 * Cifra un JWT y devuelve su cadena token
+	 * @param token Builder con toda la información del JWT
+	 * @return Cadena token del JWT
+	 */
 	private String sign(Builder token) {
 		Algorithm algorithm = Algorithm.HMAC256(EstadoInterno.getPassword());
 		return token.sign(algorithm);
