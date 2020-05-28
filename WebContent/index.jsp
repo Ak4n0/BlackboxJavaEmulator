@@ -58,7 +58,7 @@
 		<input type="checkbox" id="chkAuto" checked/><label for="automatico">Entradas automáticas</label>
 	</fieldset>
 	<fieldset class="fila">
-		<legend>Limites:</legend>
+		<legend>Umbrales:</legend>
 		<fieldset>
 			<legend>I0</legend>
 			<label for="I0inf">Inferior: </label><input type="text" id="I0inf" maxlength="4" size="4"readonly>
