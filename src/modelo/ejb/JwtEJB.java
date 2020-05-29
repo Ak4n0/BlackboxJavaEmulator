@@ -125,15 +125,19 @@ public class JwtEJB {
 	 */
 	private void cambiarUmbral(String puerto, Map<String, Object> umbral) {
 		Integer valor;
-		valor = (Integer) umbral.get("sup");
-		if(valor != null) {
-			nuevoUmbral(puerto, "sup", valor);
+		try {
+			valor = Integer.parseInt((String) umbral.get("sup"));
+		} catch(NumberFormatException e) {
+			valor = null;
 		}
+		nuevoUmbral(puerto, "sup", valor);
 		
-		valor = (Integer) umbral.get("inf");
-		if(valor != null) {
-			nuevoUmbral(puerto, "inf", valor);
+		try {
+			valor = Integer.parseInt((String) umbral.get("inf"));
+		} catch(NumberFormatException e) {
+			valor = null;
 		}
+		nuevoUmbral(puerto, "inf", valor);
 	}
 	
 	/**
@@ -142,7 +146,7 @@ public class JwtEJB {
 	 * @param umbral "sup" para el umbral superior, "inf" para el umbral inferior
 	 * @param valor Nuevo valor para el umbral.
 	 */
-	private void nuevoUmbral(String puerto, String umbral, int valor) {
+	private void nuevoUmbral(String puerto, String umbral, Integer valor) {
 		switch(puerto) {
 		case "I0":
 			if(umbral.equals("sup")) {

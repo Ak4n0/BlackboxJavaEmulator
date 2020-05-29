@@ -1,4 +1,23 @@
+// Socket de ws
 let socket;
+
+// Temporizador para la reconexión ws
+let timer = setInterval(tick, 1000);
+
+// Indica si está conectado con ws al cliente
+let conectado = false;
+
+
+function tick() {
+	if(!conectado) {
+		inicializar();
+		msglog = {
+				"level": "info",
+				"msg": "Intentando conectar..."
+		};
+		logger(msglog)
+	}
+}
 
 function inicializar() {
 	// inicializar variables globales
@@ -187,15 +206,10 @@ function inicializarWebsocket() {
 				"type": "init"
 		}
 		socket.send(JSON.stringify(msg));
+		conectado = true;
 	};
 
 	socket.onmessage = function(event) {
-		let msglog = {
-				"level": "message",
-				"msg": `[message] Data received from server: ${event.data}`
-		};
-		logger(msglog);
-		
 		let obj = JSON.parse(event.data);
 		switch(obj.type) {
 		case "init":
@@ -203,7 +217,11 @@ function inicializarWebsocket() {
 			break;
 		case "mod":
 			if(/^I\d+$/.test(obj.param)) {
-				element(obj.param).value = obj.value;
+				if(obj.limit != null) {
+					element(obj.param + obj.limit).value = obj.value;
+				} else {
+					element(obj.param).value = obj.value;
+				}
 			}
 
 			if(/^O\d+$/.test(obj.param)) {
@@ -225,18 +243,22 @@ function inicializarWebsocket() {
 			// event.code is usually 1006 in this case
 			msglog = {
 					"level": "info",
-					"msg": "[close] Connection died"
+					"msg": "[close] Conexión cerrada por el servidor."
 			};
 		}
 		logger(msglog);
+		
+		conectado = false;
 	};
 
 	socket.onerror = function(error) {
 		let msglog = {
 				"level": "error",
-				"msg": `[error] ${error.message}`
+				"msg": `[error] Error de conexión: ${error.message}`
 		};
 		logger(msglog);
+		
+		conectado = false;
 	};
 }
 

@@ -44,10 +44,10 @@
 	</fieldset>
 	<fieldset class="fila">
 		<legend>Salidas:</legend>
-		<input type="checkbox" id="O0"><label for="O0">Salida 0</label><br>
-		<input type="checkbox" id="O1"><label for="O1">Salida 1</label><br>
-		<input type="checkbox" id="O2"><label for="O2">Salida 2</label><br>
-		<input type="checkbox" id="O3"><label for="O3">Salida 3</label>
+		<input type="checkbox" id="O0" class="salida"><label for="O0">Salida 0</label><br>
+		<input type="checkbox" id="O1" class="salida"><label for="O1">Salida 1</label><br>
+		<input type="checkbox" id="O2" class="salida"><label for="O2">Salida 2</label><br>
+		<input type="checkbox" id="O3" class="salida"><label for="O3">Salida 3</label>
 	</fieldset>
 	<fieldset class="fila">
 		<legend>Entradas:</legend>

@@ -256,7 +256,7 @@ public class WebSocketEJB {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void enviarLimite(String entrada, String limite, int valor) {
+	public void enviarLimite(String entrada, String limite, Integer valor) {
 		JSONObject obj = new JSONObject();
 		obj.put("type", "mod");
 		obj.put("param", entrada);
