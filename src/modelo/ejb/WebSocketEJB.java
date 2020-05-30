@@ -271,4 +271,21 @@ public class WebSocketEJB {
 			}
 		});
 	}
+
+	@SuppressWarnings("unchecked")
+	public void enviarPasswd(String passwd) {
+		JSONObject obj = new JSONObject();
+		obj.put("type", "mod");
+		obj.put("param", "passwd");
+		obj.put("value", passwd);
+		sessions.forEach((Session session) -> {
+			try {
+				session.getBasicRemote().sendText(obj.toString());
+				logger.debug("Enviando mensaje: " + obj.toString());
+			} catch (IOException e) {
+				logger.error(e.getLocalizedMessage());
+			}
+		});
+		
+	}
 }

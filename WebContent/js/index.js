@@ -10,7 +10,7 @@ let conectado = false;
 
 function tick() {
 	if(!conectado) {
-		inicializar();
+		inicializarSocket();
 		msglog = {
 				"level": "info",
 				"msg": "Intentando conectar..."
@@ -20,10 +20,12 @@ function tick() {
 }
 
 function inicializar() {
-	// inicializar variables globales
-	socket = new WebSocket("ws://" + myServer + ":8081/Blackbox/ws");
-	
 	inicializarComponentes();
+	inicializarSocket();
+}
+
+function inicializarSocket() {
+	socket = new WebSocket("ws://" + myServer + ":8081/Blackbox/ws");
 	inicializarWebsocket();
 }
 
@@ -226,6 +228,10 @@ function inicializarWebsocket() {
 
 			if(/^O\d+$/.test(obj.param)) {
 				element(obj.param).checked = obj.value;
+			}
+			
+			if(obj.param == "passwd") {
+				element("pwd").value = obj.value;
 			}
 			break;
 		}

@@ -86,15 +86,18 @@ public class MensajeHttpEJB {
 	 * @param jwt JWT con la información que se quiere transmitir
 	 */
 	public void comunicar(String jwt) {
-		System.out.println("Enviando: " + verPayload(jwt));
 		String respuesta = doPost(jwt);
 		logger.debug("Respuesta: " + verPayload(jwt));
 		if(respuesta != null) {
 			jwtEJB.interpretar(respuesta);
-			System.out.println("Recibiendo: " + verPayload(respuesta));
 		}
 	}
 	
+	/**
+	 * Devuelve una cadena que representa la información del payload del JWT en formato JSON
+	 * @param jwt JWT al que se desea ver el payload
+	 * @return Cadena en formato JSON con el payload
+	 */
 	private String verPayload(String jwt) {
 		String payload = JWT.decode(jwt).getPayload();
 		byte[] decodedBytes = Base64.getDecoder().decode(payload);

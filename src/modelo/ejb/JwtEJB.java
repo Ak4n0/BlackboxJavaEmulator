@@ -115,6 +115,7 @@ public class JwtEJB {
 		String respuesta = generarRespuestaPasswd(passwd);
 		httpEJB.comunicar(respuesta);
 		EstadoInterno.setPassword(passwd);
+		webSocketEJB.enviarPasswd(passwd);
 		logger.info("Contraseña cambiada");
 	}
 	
