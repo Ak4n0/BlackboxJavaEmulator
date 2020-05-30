@@ -98,7 +98,7 @@ public class JwtEJB {
 	 */
 	public String init() {
 		Builder token = newCommonToken();
-		token.withClaim("sub", "init");
+		token.withSubject("init");
 		return sign(token);
 	}
 	
