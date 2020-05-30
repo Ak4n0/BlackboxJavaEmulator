@@ -72,11 +72,6 @@ public class JwtEJB {
 	 */
 	private void atenderModificaciones(DecodedJWT jwt) {
 		Claim claim;
-		// Cambio de password
-		claim = jwt.getClaim("pwd");
-		if(!claim.isNull()) {
-			cambiarPwd(claim.asString());
-		}
 		
 		// Salidas
 		for(int n = 0; n < 4; ++n) {
@@ -105,18 +100,6 @@ public class JwtEJB {
 		Builder token = newCommonToken();
 		token.withClaim("sub", "init");
 		return sign(token);
-	}
-	
-	/**
-	 * Inicia las tareas para cambiar el password
-	 * @param passwd La nueva contraseña que va a tener la blackbox
-	 */
-	private void cambiarPwd(String passwd) {
-		String respuesta = generarRespuestaPasswd(passwd);
-		httpEJB.comunicar(respuesta);
-		EstadoInterno.setPassword(passwd);
-		webSocketEJB.enviarPasswd(passwd);
-		logger.info("Contraseña cambiada");
 	}
 	
 	/**
@@ -255,18 +238,6 @@ public class JwtEJB {
 		Builder token = newCommonToken();
 		token.withSubject("SYN");
 		return sign(token);
-	}
-
-	/**
-	 * Devuelve un token JWT con una petición de cambio de contraseña
-	 * @param passwd Nueva contraseña que se desea que guarde el servidor
-	 * @return Cadena token JWT con una petición de nueva contraseña
-	 */
-	private String generarRespuestaPasswd(String passwd) {
-		Builder token = newCommonToken();
-		token.withSubject("pwd");
-		token.withClaim("valor", passwd);
-	    return sign(token);
 	}
 	
 	/**
