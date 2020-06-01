@@ -17,13 +17,13 @@ public class TemporizadorEJB {
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(TemporizadorEJB.class);
 	
 	@EJB
-	MensajeHttpEJB httpEJB;
+	private MensajeHttpEJB httpEJB;
 	
 	@EJB
-	JwtEJB jwtEJB;
+	private JwtEJB jwtEJB;
 	
 	@EJB
-	WebSocketEJB webSocketEJB;
+	private WebSocketEJB webSocketEJB;
 	
 	@Schedule(second="*", minute="*", hour="*")
 	private void inicializar(Timer t) {

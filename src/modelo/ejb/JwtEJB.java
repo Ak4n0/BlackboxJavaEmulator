@@ -33,10 +33,10 @@ public class JwtEJB {
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(JwtEJB.class);
 	
 	@EJB
-	MensajeHttpEJB httpEJB;
+	private MensajeHttpEJB httpEJB;
 	
 	@EJB
-	WebSocketEJB webSocketEJB;
+	private WebSocketEJB webSocketEJB;
 	
 	/**
 	 * Interpreta un JWT y realiza diferentes acciones según lo que este indica

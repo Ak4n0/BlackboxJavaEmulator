@@ -33,10 +33,10 @@ public class WebSocketEJB {
 	private static Set<Session> sessions = new HashSet<>();
 	
 	@EJB
-	JwtEJB jwtEJB;
+	private JwtEJB jwtEJB;
 	
 	@EJB
-	MensajeHttpEJB httpEJB;
+	private MensajeHttpEJB httpEJB;
 	
 	@OnOpen
 	public void onOpen(Session session) {

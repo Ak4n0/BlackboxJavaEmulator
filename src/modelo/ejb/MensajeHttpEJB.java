@@ -25,7 +25,7 @@ import modelo.pojo.EstadoInterno;
 public class MensajeHttpEJB {
 
 	@EJB
-	JwtEJB jwtEJB;
+	private JwtEJB jwtEJB;
 	
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(MensajeHttpEJB.class);
 
