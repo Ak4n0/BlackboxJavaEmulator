@@ -25,7 +25,7 @@ function inicializar() {
 }
 
 function inicializarSocket() {
-	socket = new WebSocket("ws://" + myServer + ":8081/Blackbox/ws");
+	socket = new WebSocket("ws://" + myServer + ":8080/Blackbox/ws");
 	inicializarWebsocket();
 }
 

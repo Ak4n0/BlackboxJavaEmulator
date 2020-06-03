@@ -16,9 +16,18 @@
 			<pattern>%date{"yyyy-MM-dd HH:mm:ss", Europe/Madrid} %-4relative[%thread] %-5level %logger{35} - %msg%n</pattern>
 		</encoder>
 	</appender>
+	
+	<appender name="TOMEE" class="ch.qos.logback.core.FileAppender">
+		<file>/opt/tomee/webapps/Blackbox/blackbox.log</file>
+		<append>true</append>
+		<encoder>
+			<pattern>%date{"yyyy-MM-dd HH:mm:ss", Europe/Madrid} %-4relative[%thread] %-5level %logger{35} - %msg%n</pattern>
+		</encoder>
+	</appender>
 
-	<root level="info">
+	<root level="debug">
 		<appender-ref ref="ECLIPSE" />
 		<appender-ref ref="TOMCAT" />
+		<appender-ref ref="TOMEE" />
 	</root>
 </configuration>

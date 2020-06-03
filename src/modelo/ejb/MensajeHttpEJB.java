@@ -29,7 +29,7 @@ public class MensajeHttpEJB {
 	
 	private static final Logger logger = (Logger) LoggerFactory.getLogger(MensajeHttpEJB.class);
 
-	private final String path = "/Centinela/blackbox/mensajes";
+	private final String path = "/blackbox/mensajes";
 	
 	private static HttpURLConnection con;
 	
